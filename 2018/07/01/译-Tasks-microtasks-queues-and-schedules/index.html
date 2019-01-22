@@ -22,7 +22,7 @@
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="如果你更喜欢视频讲解的话，推荐 Philip Roberts 的 great talk at JSConf on the event loop，虽然没有涵盖 microtasks ，但却详细介绍了 tasks、queues、schedules 原文地址 思考以下JS片段12345678910111213console.log(&apos;script start&apos;);setTimeout(function(">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-01-22T09:11:38.816Z">
+<meta property="og:updated_time" content="2019-01-22T09:26:29.496Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="[译]Tasks,microtasks,queues,and schedules">
 <meta name="twitter:description" content="如果你更喜欢视频讲解的话，推荐 Philip Roberts 的 great talk at JSConf on the event loop，虽然没有涵盖 microtasks ，但却详细介绍了 tasks、queues、schedules 原文地址 思考以下JS片段12345678910111213console.log(&apos;script start&apos;);setTimeout(function(">
@@ -159,282 +159,10 @@
 <p><a href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/" target="_blank" rel="noopener">原文地址</a></p>
 <p>思考以下JS片段<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'script start'</span>);</span><br><span class="line"></span><br><span class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'setTimeout'</span>);</span><br><span class="line">&#125;, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'promise1'</span>);</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'promise2'</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'script end'</span>);</span><br></pre></td></tr></table></figure></p>
 <p>控制台会打印什么呢？</p>
-<h3 id="尝试"><a href="#尝试" class="headerlink" title="尝试"></a>尝试</h3><style type="text/css">
-.Btn { 
-    display: inline-block;
-    padding: 4px 12px;
-    margin-bottom: 0;
-    font-size: 14px;
-    line-height: 20px;
-    text-align: center;
-    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
-    vertical-align: middle;
-    cursor: pointer;
-    background: #f5f5f5;
-    background-image: linear-gradient(to bottom, #fff, #e6e6e6);
-    background-repeat: repeat-x;
-    border: 1px solid #bbb;
-    border-color: rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0, 25);
-    border-radius: 4px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);  
-}
-.Btn:hover {
-    background-position: 0 -15px;
-    background-color: #e6e6e6;
-    transition: background-position 0.1s linear;
-}
-.Btn:focus {
-    outline: 5px auto -webkit-focus-ring-color;
-    outline-offset: -2px;
-}
-.log-output{
-    width: 100%;
-    box-sizing: border-box;
-    height: 12.7em;
-    font: inherit;
-    line-height: 1.5;
-}
-.event-loop-walkthrough{
-  overflow: hidden;
-  max-width: 710px;
-  background: #eee;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-flow: column;
-  flex-flow: column;
-  max-height: 90vh;
-  height: 493px;
-  position: relative;
-  margin: 0 -20px;
-}
-@media screen and (min-width: 530px){
-  .event-loop-walkthrough{
-    margin: 0;
-  }
-}
-.event-loop-walkthrough .codehilite{
-  margin: 0;
-  padding: 0 12px;
-  position: relative;
-  top: 60px;
-  -webkit-transform: translateY(-50px);
-  transform: translateY(-50px);
-}
-.event-loop-walkthrough table{
-  border-collapse: collapse;
-  width: 100%;
-  table-layout: fixed;
-}
-.event-loop-walkthrough td{
-  padding: 0;
-}
-.task-queue,
-.microtask-queue,
-.js-stack,
-.event-loop-log{
-  line-height: 1;
-  border-top: 1px solid #FFF;
-}
-.task-queue th,
-.microtask-queue th,
-.js-stack th,
-.event-loop-log th{
-  font-weight: normal;
-  text-align: left;
-  padding: 10px 5px;
-  background: #ddd;
-  vertical-align: top;
-  width: 5.1rem;
-}
-.event-loop-items{
-  display: -webkit-flex;
-  display: flex;
-  overflow: hidden;
-  padding-left: 5px;
-}
-.event-loop-rail{
-  position: relative;
-  display: -webkit-flex;
-  display: flex;
-}
-.event-loop-log .event-loop-items{
-  -webkit-flex-flow: row wrap;
-  flex-flow: row wrap;
-}
-.event-loop-item{
-  background: #ddd;
-  margin: 5px;
-  padding: 5px;
-  margin-left: 0;
-  opacity: 0;
-  white-space: nowrap;
-}
-.event-loop-item.active{
-  background-color: #FFDF1E;
-}
-.event-loop-commentary{
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-justify-content: center;
-  justify-content: center;
-  -webkit-align-items: center;
-  align-items: center;
-  font-size: 1.3rem;
-  color: #fff;
-  line-height: 1.2;
-  padding: 0 7%;
-}
-@media screen and (min-width: 530px){
-  .event-loop-commentary{
-    font-size: 1.7rem;
-  }
-}
-.event-loop-commentary-item{
-  background: rgba(0, 0, 0, 0.77);
-  border-radius: 7px;
-  padding: 0.8rem 1.2rem;
-  opacity: 0;
-}
-.js-source{
-  -webkit-flex: 1;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  background: #2D2D2D;
-}
-.js-source .line-highlight{
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 60px;
-  background: rgba(255, 255, 255, 0.2);
-  z-index: 1;
-  opacity: 0;
-  line-height: 1.4;
-  font-size: 1rem;
-  font-family: Inconsolata, monospace;
-}
-.js-source .line-highlight::before{
-  content: '.Hello';
-  color: transparent;
-}
-@media screen and (min-width: 530px){
-  .js-source .line-highlight::before{
-    font-size: 1.1rem;
-  }
-}
-.event-loop-controls{
-  background: #DDDDDD;
-  fill: #6D6D6D;
-  padding: 0.6rem;
-  height: 1.7rem;
-  border-top: 1px solid #FFF;
-}
-.event-loop-controls svg{
-  height: 100%;
-  display: block;
-  margin-right: 0;
-  margin-left: auto;
-}
-.event-loop-walkthrough .prev-btn,
-.event-loop-walkthrough .next-btn{
-  fill: rgba(0,0,0,0);
-  cursor: pointer;
-}
-.codehilite{
-  background: #2D2D2D;
-  color: #E4E4E4;
-  margin: 1em -20px;
-  padding: 16px 20px;
-  line-height: 1.4;
-  font-size: 1rem;
-  overflow: auto;
-}
-.codehilite pre{
-  font-family: Inconsolata, courier, monospace;
-  margin: 0;
-  display: inline-block;
-  padding-right: 16px;
-}
-.codehilite .hll { background-color: #ffffcc }
-  .codehilite .c { color: #f48c5f} /* Comment */
-  .codehilite .err { color: #E4E4E4} /* Error */
-  .codehilite .g { color: #E4E4E4} /* Generic */
-  .codehilite .k { color: #b294bb} /* Keyword */
-  .codehilite .l { color: #E4E4E4} /* Literal */
-  .codehilite .n { color: #E4E4E4} /* Name */
-  .codehilite .o { color: #6cc0b7} /* Operator */
-  .codehilite .x { color: #E4E4E4} /* Other */
-  .codehilite .p { color: #E4E4E4} /* Punctuation */
-  .codehilite .cm { color: #f48c5f} /* Comment.Multiline */
-  .codehilite .cp { color: #fcaf3e} /* Comment.Preproc */
-  .codehilite .c1 { color: #f48c5f} /* Comment.Single */
-  .codehilite .cs { color: #f48c5f} /* Comment.Special */
-  .codehilite .gd { color: #2e3436; background-color: #0e1416 } /* Generic.Deleted */
-  .codehilite .ge { color: #E4E4E4} /* Generic.Emph */
-  .codehilite .gr { color: #eeeeec; background-color: #cc0000 } /* Generic.Error */
-  .codehilite .gh { color: #fcaf3e} /* Generic.Heading */
-  .codehilite .gi { color: #E4E4E4; background-color: #1f2b2d } /* Generic.Inserted */
-  .codehilite .go { color: #2c3032; background-color: #2c3032 } /* Generic.Output */
-  .codehilite .gp { color: #E4E4E4} /* Generic.Prompt */
-  .codehilite .gs { color: #E4E4E4} /* Generic.Strong */
-  .codehilite .gu { color: #fcaf3e} /* Generic.Subheading */
-  .codehilite .gt { color: #E4E4E4} /* Generic.Traceback */
-  .codehilite .kc { color: #b294bb} /* Keyword.Constant */
-  .codehilite .kd { color: #b294bb} /* Keyword.Declaration */
-  .codehilite .kn { color: #b294bb} /* Keyword.Namespace */
-  .codehilite .kp { color: #b294bb} /* Keyword.Pseudo */
-  .codehilite .kr { color: #b294bb} /* Keyword.Reserved */
-  .codehilite .kt { color: #e3e7df} /* Keyword.Type */
-  .codehilite .ld { color: #E4E4E4} /* Literal.Date */
-  .codehilite .m { color: #f48c5f} /* Literal.Number */
-  .codehilite .s { color: #b2bd67} /* Literal.String */
-  .codehilite .na { color: #e65b67} /* Name.Attribute */
-  .codehilite .nb { color: #f0c674} /* Name.Builtin */
-  .codehilite .nc { color: #E4E4E4} /* Name.Class */
-  .codehilite .no { color: #f48c5f} /* Name.Constant */
-  .codehilite .nd { color: #E4E4E4} /* Name.Decorator */
-  .codehilite .ni { color: #888a85} /* Name.Entity */
-  .codehilite .ne { color: #E4E4E4} /* Name.Exception */
-  .codehilite .nf { color: #fcaf3e} /* Name.Function */
-  .codehilite .nl { color: #E4E4E4} /* Name.Label */
-  .codehilite .nn { color: #E4E4E4} /* Name.Namespace */
-  .codehilite .nx { color: #E4E4E4} /* Name.Other */
-  .codehilite .py { color: #E4E4E4} /* Name.Property */
-  .codehilite .nt { color: #e65b67} /* Name.Tag */
-  .codehilite .nv { color: #ffffff} /* Name.Variable */
-  .codehilite .ow { color: #E4E4E4} /* Operator.Word */
-  .codehilite .w { color: #E4E4E4} /* Text.Whitespace */
-  .codehilite .mf { color: #f48c5f} /* Literal.Number.Float */
-  .codehilite .mh { color: #f48c5f} /* Literal.Number.Hex */
-  .codehilite .mi { color: #f48c5f} /* Literal.Number.Integer */
-  .codehilite .mo { color: #f48c5f} /* Literal.Number.Oct */
-  .codehilite .sb { color: #E4E4E4} /* Literal.String.Backtick */
-  .codehilite .sc { color: #E4E4E4} /* Literal.String.Char */
-  .codehilite .sd { color: #E4E4E4} /* Literal.String.Doc */
-  .codehilite .s2 { color: #b2bd67} /* Literal.String.Double */
-  .codehilite .se { color: #E4E4E4} /* Literal.String.Escape */
-  .codehilite .sh { color: #E4E4E4} /* Literal.String.Heredoc */
-  .codehilite .si { color: #E4E4E4} /* Literal.String.Interpol */
-  .codehilite .sx { color: #E4E4E4} /* Literal.String.Other */
-  .codehilite .sr { color: #E4E4E4} /* Literal.String.Regex */
-  .codehilite .s1 { color: #b2bd67} /* Literal.String.Single */
-  .codehilite .ss { color: #E4E4E4} /* Literal.String.Symbol */
-  .codehilite .bp { color: #E4E4E4} /* Name.Builtin.Pseudo */
-  .codehilite .vc { color: #ffffff} /* Name.Variable.Class */
-  .codehilite .vg { color: #ffffff} /* Name.Variable.Global */
-  .codehilite .vi { color: #ffffff} /* Name.Variable.Instance */
-  .codehilite .il { color: #f48c5f} /* Literal.Number.Integer.Long */
-</style>
+<h3 id="尝试"><a href="#尝试" class="headerlink" title="尝试"></a>尝试</h3><p><style type="text/css"><br>.Btn {<br>    display: inline-block;<br>    padding: 4px 12px;<br>    margin-bottom: 0;<br>    font-size: 14px;<br>    line-height: 20px;<br>    text-align: center;<br>    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);<br>    vertical-align: middle;<br>    cursor: pointer;<br>    background: #f5f5f5;<br>    background-image: linear-gradient(to bottom, #fff, #e6e6e6);<br>    background-repeat: repeat-x;<br>    border: 1px solid #bbb;<br>    border-color: rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0.15) rgba(0, 0, 0, 0, 25);<br>    border-radius: 4px;<br>    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);<br>}<br>.Btn:hover {<br>    background-position: 0 -15px;<br>    background-color: #e6e6e6;<br>    transition: background-position 0.1s linear;<br>}<br>.Btn:focus {<br>    outline: 5px auto -webkit-focus-ring-color;<br>    outline-offset: -2px;<br>}<br>.log-output{<br>    width: 100%;<br>    box-sizing: border-box;<br>    height: 12.7em;<br>    font: inherit;<br>    line-height: 1.5;<br>}<br>.event-loop-walkthrough{<br>  overflow: hidden;<br>  max-width: 710px;<br>  background: #eee;<br>  display: -webkit-flex;<br>  display: flex;<br>  -webkit-flex-flow: column;<br>  flex-flow: column;<br>  max-height: 90vh;<br>  height: 493px;<br>  position: relative;<br>  margin: 0 -20px;<br>}<br>@media screen and (min-width: 530px){<br>  .event-loop-walkthrough{<br>    margin: 0;<br>  }<br>}<br>.event-loop-walkthrough .codehilite{<br>  margin: 0;<br>  padding: 0 12px;<br>  position: relative;<br>  top: 60px;<br>  -webkit-transform: translateY(-50px);<br>  transform: translateY(-50px);<br>}<br>.event-loop-walkthrough table{<br>  border-collapse: collapse;<br>  width: 100%;<br>  table-layout: fixed;<br>}<br>.event-loop-walkthrough td{<br>  padding: 0;<br>}<br>.task-queue,<br>.microtask-queue,<br>.js-stack,<br>.event-loop-log{<br>  line-height: 1;<br>  border-top: 1px solid #FFF;<br>}<br>.task-queue th,<br>.microtask-queue th,<br>.js-stack th,<br>.event-loop-log th{<br>  font-weight: normal;<br>  text-align: left;<br>  padding: 10px 5px;<br>  background: #ddd;<br>  vertical-align: top;<br>  width: 5.1rem;<br>}<br>.event-loop-items{<br>  display: -webkit-flex;<br>  display: flex;<br>  overflow: hidden;<br>  padding-left: 5px;<br>}<br>.event-loop-rail{<br>  position: relative;<br>  display: -webkit-flex;<br>  display: flex;<br>}<br>.event-loop-log .event-loop-items{<br>  -webkit-flex-flow: row wrap;<br>  flex-flow: row wrap;<br>}<br>.event-loop-item{<br>  background: #ddd;<br>  margin: 5px;<br>  padding: 5px;<br>  margin-left: 0;<br>  opacity: 0;<br>  white-space: nowrap;<br>}<br>.event-loop-item.active{<br>  background-color: #FFDF1E;<br>}<br>.event-loop-commentary{<br>  pointer-events: none;<br>  position: absolute;<br>  top: 0;<br>  left: 0;<br>  right: 0;<br>  bottom: 0;<br>  display: -webkit-flex;<br>  display: flex;<br>  -webkit-justify-content: center;<br>  justify-content: center;<br>  -webkit-align-items: center;<br>  align-items: center;<br>  font-size: 1.3rem;<br>  color: #fff;<br>  line-height: 1.2;<br>  padding: 0 7%;<br>}<br>@media screen and (min-width: 530px){<br>  .event-loop-commentary{<br>    font-size: 1.7rem;<br>  }<br>}<br>.event-loop-commentary-item{<br>  background: rgba(0, 0, 0, 0.77);<br>  border-radius: 7px;<br>  padding: 0.8rem 1.2rem;<br>  opacity: 0;<br>}<br>.js-source{<br>  -webkit-flex: 1;<br>  flex: 1;<br>  overflow: hidden;<br>  position: relative;<br>  background: #2D2D2D;<br>}<br>.js-source .line-highlight{<br>  position: absolute;<br>  left: 0;<br>  right: 0;<br>  top: 60px;<br>  background: rgba(255, 255, 255, 0.2);<br>  z-index: 1;<br>  opacity: 0;<br>  line-height: 1.4;<br>  font-size: 1rem;<br>  font-family: Inconsolata, monospace;<br>}<br>.js-source .line-highlight::before{<br>  content: ‘.Hello’;<br>  color: transparent;<br>}<br>@media screen and (min-width: 530px){<br>  .js-source .line-highlight::before{<br>    font-size: 1.1rem;<br>  }<br>}<br>.event-loop-controls{<br>  background: #DDDDDD;<br>  fill: #6D6D6D;<br>  padding: 0.6rem;<br>  height: 1.7rem;<br>  border-top: 1px solid #FFF;<br>}<br>.event-loop-controls svg{<br>  height: 100%;<br>  display: block;<br>  margin-right: 0;<br>  margin-left: auto;<br>}<br>.event-loop-walkthrough .prev-btn,<br>.event-loop-walkthrough .next-btn{<br>  fill: rgba(0,0,0,0);<br>  cursor: pointer;<br>}<br>.codehilite{<br>  background: #2D2D2D;<br>  color: #E4E4E4;<br>  margin: 1em -20px;<br>  padding: 16px 20px;<br>  line-height: 1.4;<br>  font-size: 1rem;<br>  overflow: auto;<br>}<br>.codehilite pre{<br>  font-family: Inconsolata, courier, monospace;<br>  margin: 0;<br>  display: inline-block;<br>  padding-right: 16px;<br>}<br>.codehilite .hll { background-color: #ffffcc }<br>  .codehilite .c { color: #f48c5f} /<em> Comment </em>/<br>  .codehilite .err { color: #E4E4E4} /<em> Error </em>/<br>  .codehilite .g { color: #E4E4E4} /<em> Generic </em>/<br>  .codehilite .k { color: #b294bb} /<em> Keyword </em>/<br>  .codehilite .l { color: #E4E4E4} /<em> Literal </em>/<br>  .codehilite .n { color: #E4E4E4} /<em> Name </em>/<br>  .codehilite .o { color: #6cc0b7} /<em> Operator </em>/<br>  .codehilite .x { color: #E4E4E4} /<em> Other </em>/<br>  .codehilite .p { color: #E4E4E4} /<em> Punctuation </em>/<br>  .codehilite .cm { color: #f48c5f} /<em> Comment.Multiline </em>/<br>  .codehilite .cp { color: #fcaf3e} /<em> Comment.Preproc </em>/<br>  .codehilite .c1 { color: #f48c5f} /<em> Comment.Single </em>/<br>  .codehilite .cs { color: #f48c5f} /<em> Comment.Special </em>/<br>  .codehilite .gd { color: #2e3436; background-color: #0e1416 } /<em> Generic.Deleted </em>/<br>  .codehilite .ge { color: #E4E4E4} /<em> Generic.Emph </em>/<br>  .codehilite .gr { color: #eeeeec; background-color: #cc0000 } /<em> Generic.Error </em>/<br>  .codehilite .gh { color: #fcaf3e} /<em> Generic.Heading </em>/<br>  .codehilite .gi { color: #E4E4E4; background-color: #1f2b2d } /<em> Generic.Inserted </em>/<br>  .codehilite .go { color: #2c3032; background-color: #2c3032 } /<em> Generic.Output </em>/<br>  .codehilite .gp { color: #E4E4E4} /<em> Generic.Prompt </em>/<br>  .codehilite .gs { color: #E4E4E4} /<em> Generic.Strong </em>/<br>  .codehilite .gu { color: #fcaf3e} /<em> Generic.Subheading </em>/<br>  .codehilite .gt { color: #E4E4E4} /<em> Generic.Traceback </em>/<br>  .codehilite .kc { color: #b294bb} /<em> Keyword.Constant </em>/<br>  .codehilite .kd { color: #b294bb} /<em> Keyword.Declaration </em>/<br>  .codehilite .kn { color: #b294bb} /<em> Keyword.Namespace </em>/<br>  .codehilite .kp { color: #b294bb} /<em> Keyword.Pseudo </em>/<br>  .codehilite .kr { color: #b294bb} /<em> Keyword.Reserved </em>/<br>  .codehilite .kt { color: #e3e7df} /<em> Keyword.Type </em>/<br>  .codehilite .ld { color: #E4E4E4} /<em> Literal.Date </em>/<br>  .codehilite .m { color: #f48c5f} /<em> Literal.Number </em>/<br>  .codehilite .s { color: #b2bd67} /<em> Literal.String </em>/<br>  .codehilite .na { color: #e65b67} /<em> Name.Attribute </em>/<br>  .codehilite .nb { color: #f0c674} /<em> Name.Builtin </em>/<br>  .codehilite .nc { color: #E4E4E4} /<em> Name.Class </em>/<br>  .codehilite .no { color: #f48c5f} /<em> Name.Constant </em>/<br>  .codehilite .nd { color: #E4E4E4} /<em> Name.Decorator </em>/<br>  .codehilite .ni { color: #888a85} /<em> Name.Entity </em>/<br>  .codehilite .ne { color: #E4E4E4} /<em> Name.Exception </em>/<br>  .codehilite .nf { color: #fcaf3e} /<em> Name.Function </em>/<br>  .codehilite .nl { color: #E4E4E4} /<em> Name.Label </em>/<br>  .codehilite .nn { color: #E4E4E4} /<em> Name.Namespace </em>/<br>  .codehilite .nx { color: #E4E4E4} /<em> Name.Other </em>/<br>  .codehilite .py { color: #E4E4E4} /<em> Name.Property </em>/<br>  .codehilite .nt { color: #e65b67} /<em> Name.Tag </em>/<br>  .codehilite .nv { color: #ffffff} /<em> Name.Variable </em>/<br>  .codehilite .ow { color: #E4E4E4} /<em> Operator.Word </em>/<br>  .codehilite .w { color: #E4E4E4} /<em> Text.Whitespace </em>/<br>  .codehilite .mf { color: #f48c5f} /<em> Literal.Number.Float </em>/<br>  .codehilite .mh { color: #f48c5f} /<em> Literal.Number.Hex </em>/<br>  .codehilite .mi { color: #f48c5f} /<em> Literal.Number.Integer </em>/<br>  .codehilite .mo { color: #f48c5f} /<em> Literal.Number.Oct </em>/<br>  .codehilite .sb { color: #E4E4E4} /<em> Literal.String.Backtick </em>/<br>  .codehilite .sc { color: #E4E4E4} /<em> Literal.String.Char </em>/<br>  .codehilite .sd { color: #E4E4E4} /<em> Literal.String.Doc </em>/<br>  .codehilite .s2 { color: #b2bd67} /<em> Literal.String.Double </em>/<br>  .codehilite .se { color: #E4E4E4} /<em> Literal.String.Escape </em>/<br>  .codehilite .sh { color: #E4E4E4} /<em> Literal.String.Heredoc </em>/<br>  .codehilite .si { color: #E4E4E4} /<em> Literal.String.Interpol </em>/<br>  .codehilite .sx { color: #E4E4E4} /<em> Literal.String.Other </em>/<br>  .codehilite .sr { color: #E4E4E4} /<em> Literal.String.Regex </em>/<br>  .codehilite .s1 { color: #b2bd67} /<em> Literal.String.Single </em>/<br>  .codehilite .ss { color: #E4E4E4} /<em> Literal.String.Symbol </em>/<br>  .codehilite .bp { color: #E4E4E4} /<em> Name.Builtin.Pseudo </em>/<br>  .codehilite .vc { color: #ffffff} /<em> Name.Variable.Class </em>/<br>  .codehilite .vg { color: #ffffff} /<em> Name.Variable.Global </em>/<br>  .codehilite .vi { color: #ffffff} /<em> Name.Variable.Instance </em>/<br>  .codehilite .il { color: #f48c5f} /<em> Literal.Number.Integer.Long </em>/<br></style></p>
 <button class="Btn clear" id="clear">clear log</button> <button class="Btn run" id="run">run test</button>
 
-<textarea class="log log-output log-output-1" width="300" height="200"></textarea>
+<p><textarea class="log log-output log-output-1" width="300" height="200"></textarea></p>
 <script>
 function log1(str) {
     console.log(str)
@@ -455,36 +183,15 @@ document.querySelector("#run").addEventListener("click", function() {
 })
 </script>
 
-正确答案是：`script start`，`script end`，`promise1`，`promise2`，`setTimeout`，打印的结果与浏览器的支持程度有莫大的关系
-
-Microsoft Edge, Firefox 40, iOS Safari and desktop Safari 8.0.8 会在 `promise1` 和 `promsie2` 之前打印 `setTimeout`
-
-### 原因
-要理解这一点，你需要知道 `event loop` 如何处理 `tasks` 和 `microtasks` 的
-
-每个‘线程’都有自己的 `event loop`，因而每个 [`web worker`](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Workers_API)也都有自己的 `event loop`，同源的所有窗口共享一个 `event loop` 以便能够同步的交流。`event loop` 会持续不断地运行，执行队列中的所有任务。一个 `event loop` 会有多个任务源，可保证该源中任务的执行顺序(特别是 [IndexedDB](http://w3c.github.io/IndexedDB/#database-access-task-source) 等规范定义了自己的任务源)，但是浏览器会在 `event loop` 的每一个回合中选择从哪个源获取任务。这允许浏览器优先考虑性能敏感的任务，例如用户输入。
-
-`Tasks` 都是被安排好的，以便浏览器可以从其内部进入 JavaScript/DOM 域并确保这些操作能够按顺序执行。在 `tasks` 之间，浏览器可能会渲染更新。从鼠标单击到事件回调都需要安排任务，解析 `HTML` 以及上述例子中的 `setTimeout` 也是如此。
-
-`setTimeout` 等待给定的延迟，然后为其回调安排新的任务。这可以解释为什么 `setTimeout` 会在 `script end` 后面打印—— `script end` 是第一个任务的一部分，`setTimeout` 是在另一个任务中打印的。
-
-微任务(`Miscrotasks`)通常被安排用于处理在当前正在执行的脚本之后发生的事，例如对批量的行为作出反应，或者不必创建一个全新的任务去处理异步的事务。只要没有其他 JavaScript 在执行中，并且在每个任务结束时，就会在回调后处理微任务队列。在微任务中排列的任何额外的微任务都会添加到队列的末尾并进行处理。微任务包括变动观察回调函数（mutation observer callbacks），以前上面提到的 promise 回调
-
-一旦 promise 的状态凝滞，或者它的状态已经凝滞，便会为其回调往队列中添加一个微任务。这样能够确保即使 promise 的状态已经凝滞， promsie 回调也是异步的。所以对一个状态确定的 promise 调用 `.then(yey, nay)` 会立即往队列中添加一个微任务。`promise1` 和 `promise2` 会在 `script end` 后面打印便是如此，因为当前运行的脚本必须在处理微任务之前完成。微任务总是会在下一个任务之前发生，所以 `promise1` 和 `promise2` 会在 `setTimeout` 之前打印。
-
-<div class="event-loop-walkthrough event-loop-walkthrough-1"><div class="js-source"><div class="line-highlight"></div><div class="codehilite"><pre><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'script start'</span><span class="p">);</span><br>
-<span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span><span class="p">{</span>
-<span class="nx" style="padding-left: 20px;">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'setTimeout'</span><span class="p">);</span>
-<span class="p">},</span><span class="mi">0</span><span class="p">);</span><br><br>
-<span class="nx">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span><span class="p">{</span>
-<span class="nx" style="padding-left: 20px;">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'promise1'</span><span class="p">);</span>
-<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span><span class="p">{</span>
-<span class="nx" style="padding-left: 20px;">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'promise2'</span><span class="p">);</span>
-<span class="p">});</span><br>
-<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'script end'</span><span class="p">);</span>
-</pre></div><p></p></div><table style="margin-bottom: 0;"><tbody><tr class="task-queue"><th>Tasks</th><td><div class="event-loop-items"><div class="event-loop-rail"><div class="event-loop-item">Run script</div><div class="event-loop-item">setTimeout callback</div></div></div></td></tr><tr class="microtask-queue"><th>Microtasks</th><td><div class="event-loop-items"><div class="event-loop-rail"><div class="event-loop-item">Promise then</div><div class="event-loop-item">Promise then</div></div></div></td></tr><tr class="js-stack"><th>JS stack</th><td><div class="event-loop-items"></div></td></tr><tr class="event-loop-log"><th>Log</th><td><div class="event-loop-items"><div class="event-loop-item">script start</div><div class="event-loop-item">script end</div><div class="event-loop-item">promise1</div><div class="event-loop-item">promise2</div><div class="event-loop-item">setTimeout</div></div></td></tr></tbody></table><div class="event-loop-controls"><svg viewbox="0 0 5 2"><path d="M2,0 L2,2 L0,1 z"/><path d="M3,0 L5,1 L3,2 z"/><path class="prev-btn" d="M0,0 H2.5V2H0z"/><path class="next-btn" d="M2.5,0 H5V2H2.5z"/></svg></div><div class="event-loop-commentary"><div class="event-loop-commentary-item"></div></div></div><p></p>
-
-
+<p>正确答案是：<code>script start</code>，<code>script end</code>，<code>promise1</code>，<code>promise2</code>，<code>setTimeout</code>，打印的结果与浏览器的支持程度有莫大的关系</p>
+<p>Microsoft Edge, Firefox 40, iOS Safari and desktop Safari 8.0.8 会在 <code>promise1</code> 和 <code>promsie2</code> 之前打印 <code>setTimeout</code></p>
+<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><p>要理解这一点，你需要知道 <code>event loop</code> 如何处理 <code>tasks</code> 和 <code>microtasks</code> 的</p>
+<p>每个‘线程’都有自己的 <code>event loop</code>，因而每个 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Workers_API" target="_blank" rel="noopener"><code>web worker</code></a>也都有自己的 <code>event loop</code>，同源的所有窗口共享一个 <code>event loop</code> 以便能够同步的交流。<code>event loop</code> 会持续不断地运行，执行队列中的所有任务。一个 <code>event loop</code> 会有多个任务源，可保证该源中任务的执行顺序(特别是 <a href="http://w3c.github.io/IndexedDB/#database-access-task-source" target="_blank" rel="noopener">IndexedDB</a> 等规范定义了自己的任务源)，但是浏览器会在 <code>event loop</code> 的每一个回合中选择从哪个源获取任务。这允许浏览器优先考虑性能敏感的任务，例如用户输入。</p>
+<p><code>Tasks</code> 都是被安排好的，以便浏览器可以从其内部进入 JavaScript/DOM 域并确保这些操作能够按顺序执行。在 <code>tasks</code> 之间，浏览器可能会渲染更新。从鼠标单击到事件回调都需要安排任务，解析 <code>HTML</code> 以及上述例子中的 <code>setTimeout</code> 也是如此。</p>
+<p><code>setTimeout</code> 等待给定的延迟，然后为其回调安排新的任务。这可以解释为什么 <code>setTimeout</code> 会在 <code>script end</code> 后面打印—— <code>script end</code> 是第一个任务的一部分，<code>setTimeout</code> 是在另一个任务中打印的。</p>
+<p>微任务(<code>Miscrotasks</code>)通常被安排用于处理在当前正在执行的脚本之后发生的事，例如对批量的行为作出反应，或者不必创建一个全新的任务去处理异步的事务。只要没有其他 JavaScript 在执行中，并且在每个任务结束时，就会在回调后处理微任务队列。在微任务中排列的任何额外的微任务都会添加到队列的末尾并进行处理。微任务包括变动观察回调函数（mutation observer callbacks），以前上面提到的 promise 回调</p>
+<p>一旦 promise 的状态凝滞，或者它的状态已经凝滞，便会为其回调往队列中添加一个微任务。这样能够确保即使 promise 的状态已经凝滞， promsie 回调也是异步的。所以对一个状态确定的 promise 调用 <code>.then(yey, nay)</code> 会立即往队列中添加一个微任务。<code>promise1</code> 和 <code>promise2</code> 会在 <code>script end</code> 后面打印便是如此，因为当前运行的脚本必须在处理微任务之前完成。微任务总是会在下一个任务之前发生，所以 <code>promise1</code> 和 <code>promise2</code> 会在 <code>setTimeout</code> 之前打印。</p>
+<p><div class="event-loop-walkthrough event-loop-walkthrough-1"><div class="js-source"><div class="line-highlight"></div><div class="codehilite"><pre><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">‘script start’</span><span class="p">);</span><br><br><span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span><span class="p">{</span><br><span class="nx" style="padding-left: 20px;">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">‘setTimeout’</span><span class="p">);</span><br><span class="p">},</span><span class="mi">0</span><span class="p">);</span><br><br><br><span class="nx">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span><span class="p">{</span><br><span class="nx" style="padding-left: 20px;">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">‘promise1’</span><span class="p">);</span><br><span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span><span class="p">{</span><br><span class="nx" style="padding-left: 20px;">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">‘promise2’</span><span class="p">);</span><br><span class="p">});</span><br><br><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">‘script end’</span><span class="p">);</span><br></pre></div><p></p></div><table style="margin-bottom: 0;"><tbody><tr class="task-queue"><th>Tasks</th><td><div class="event-loop-items"><div class="event-loop-rail"><div class="event-loop-item">Run script</div><div class="event-loop-item">setTimeout callback</div></div></div></td></tr><tr class="microtask-queue"><th>Microtasks</th><td><div class="event-loop-items"><div class="event-loop-rail"><div class="event-loop-item">Promise then</div><div class="event-loop-item">Promise then</div></div></div></td></tr><tr class="js-stack"><th>JS stack</th><td><div class="event-loop-items"></div></td></tr><tr class="event-loop-log"><th>Log</th><td><div class="event-loop-items"><div class="event-loop-item">script start</div><div class="event-loop-item">script end</div><div class="event-loop-item">promise1</div><div class="event-loop-item">promise2</div><div class="event-loop-item">setTimeout</div></div></td></tr></tbody></table><div class="event-loop-controls"><svg viewbox="0 0 5 2"><path d="M2,0 L2,2 L0,1 z"/><path d="M3,0 L5,1 L3,2 z"/><path class="prev-btn" d="M0,0 H2.5V2H0z"/><path class="next-btn" d="M2.5,0 H5V2H2.5z"/></svg></div><div class="event-loop-commentary"><div class="event-loop-commentary-item"></div></div></div></p><p></p><p></p>
 <script>
 (function() {
   function transition(el, obj, duration, easing) {
@@ -820,60 +527,26 @@ new EventLoopAnimation(document.querySelector('.event-loop-walkthrough-1'))
 
 
 
-#### 为什么有些浏览器执行的结果会不同呢？
-
-一些浏览器打印的结果为 `script start`、`script end`、`setTimeout`、`promise1`、`promise2`。它们会在 `setTimeout` 之后执行 promise 的回调。很可能是它们把 promise 的回调看做是一个新的 task 的一部分，而不是一个 microtask。
-
-上述现象的发生是情有可原的，因为 promise 来自 ECMAScript 而不是 HTML。ECMAScript 中的 jobs 的概念与 microtasks 是相似的，但如果除开 [vague mailing list discussions](https://esdiscuss.org/topic/the-initialization-steps-for-web-browsers#content-16) 中所讨论的，二者的关系却又是含糊不清、难以区分。然而，普遍的共识是，promises应该是 microtask 队列的一部分，并且有充分的理由
-
-将 promises 当成 tasks 会导致性能问题，因为回调可能会因为页面渲染等与任务相关的事情的缘故而推迟，而这种推迟是不必要的。它还会由于与其他任务源的交互而导致不确定性，而且会中断与其他 api 的交互，在这之后还会中断更多
-
-
-### 如何判断使用的是 tasks 还是 microtasks
-
-
-1. 测试
-    查看打印的日志，观察何时相对于 promise 和 setTimeout 出现，尽管得到的结果依赖于正确的实现(某些浏览器的实现可能不同)
-
-2. 查阅规范
-    例如，[step 14 of `setTimeout`](https://html.spec.whatwg.org/multipage/webappapis.html#timer-initialisation-steps) queues a task, whereas [step 5 of queuing a mutation record](https://dom.spec.whatwg.org/#queue-a-mutation-record) queues a microtask
-    如上所述，在 ECMAScript 领域，会把 microtasks 称作 "jobs"。在  [step 8.a of PerformPromiseThen](http://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen) 中，`EnqueueJob` 会被调用，用于给 microtask 设置队列
-
-下面是一些复杂的例子
-### 第一关
-
-在写这篇文章之前我可能弄错了一些概念，以下是代码片段
-
+<h4 id="为什么有些浏览器执行的结果会不同呢？"><a href="#为什么有些浏览器执行的结果会不同呢？" class="headerlink" title="为什么有些浏览器执行的结果会不同呢？"></a>为什么有些浏览器执行的结果会不同呢？</h4><p>一些浏览器打印的结果为 <code>script start</code>、<code>script end</code>、<code>setTimeout</code>、<code>promise1</code>、<code>promise2</code>。它们会在 <code>setTimeout</code> 之后执行 promise 的回调。很可能是它们把 promise 的回调看做是一个新的 task 的一部分，而不是一个 microtask。</p>
+<p>上述现象的发生是情有可原的，因为 promise 来自 ECMAScript 而不是 HTML。ECMAScript 中的 jobs 的概念与 microtasks 是相似的，但如果除开 <a href="https://esdiscuss.org/topic/the-initialization-steps-for-web-browsers#content-16" target="_blank" rel="noopener">vague mailing list discussions</a> 中所讨论的，二者的关系却又是含糊不清、难以区分。然而，普遍的共识是，promises应该是 microtask 队列的一部分，并且有充分的理由</p>
+<p>将 promises 当成 tasks 会导致性能问题，因为回调可能会因为页面渲染等与任务相关的事情的缘故而推迟，而这种推迟是不必要的。它还会由于与其他任务源的交互而导致不确定性，而且会中断与其他 api 的交互，在这之后还会中断更多</p>
+<h3 id="如何判断使用的是-tasks-还是-microtasks"><a href="#如何判断使用的是-tasks-还是-microtasks" class="headerlink" title="如何判断使用的是 tasks 还是 microtasks"></a>如何判断使用的是 tasks 还是 microtasks</h3><ol>
+<li><p>测试<br> 查看打印的日志，观察何时相对于 promise 和 setTimeout 出现，尽管得到的结果依赖于正确的实现(某些浏览器的实现可能不同)</p>
+</li>
+<li><p>查阅规范<br> 例如，<a href="https://html.spec.whatwg.org/multipage/webappapis.html#timer-initialisation-steps" target="_blank" rel="noopener">step 14 of <code>setTimeout</code></a> queues a task, whereas <a href="https://dom.spec.whatwg.org/#queue-a-mutation-record" target="_blank" rel="noopener">step 5 of queuing a mutation record</a> queues a microtask<br> 如上所述，在 ECMAScript 领域，会把 microtasks 称作 “jobs”。在  <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen" target="_blank" rel="noopener">step 8.a of PerformPromiseThen</a> 中，<code>EnqueueJob</code> 会被调用，用于给 microtask 设置队列</p>
+</li>
+</ol>
+<p>下面是一些复杂的例子</p>
+<h3 id="第一关"><a href="#第一关" class="headerlink" title="第一关"></a>第一关</h3><p>在写这篇文章之前我可能弄错了一些概念，以下是代码片段</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"outer"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"inner"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// let's get hold of those elements</span></span><br><span class="line"><span class="keyword">var</span> outer = <span class="built_in">document</span>.querySelector(<span class="string">'.outer'</span>);</span><br><span class="line"><span class="keyword">var</span> inner = <span class="built_in">document</span>.querySelector(<span class="string">'.inner'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// let's listen for attribute changes on the outer element</span></span><br><span class="line"><span class="keyword">new</span> MutationObserver(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'mutate'</span>);</span><br><span class="line">&#125;).observe(outer, &#123;</span><br><span class="line">    attribute: <span class="literal">true</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// here's a click listener</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">onClick</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'click'</span>);</span><br><span class="line">    </span><br><span class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'timeout'</span>)</span><br><span class="line">    &#125;, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        conosle.log(<span class="string">'promise'</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">    </span><br><span class="line">    outer.setAttribute(<span class="string">'data-random'</span>, <span class="built_in">Math</span>.random());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// which we'll attach to both elements</span></span><br><span class="line">inner.addEventListener(<span class="string">'click'</span>, onClick);</span><br><span class="line">outer.addEventListener(<span class="string">'click'</span>, onClick);</span><br></pre></td></tr></table></figure>
-
-根据上述代码，如果点击 `div.inner`，打印的结果是什么？
-
-#### 测试
-
-点击内部的正方形以触发点击事件
-
-<style type="text/css">
-.outer-test{
-    background: #d4d4d4;
-    padding: 25px;
-    width: 92px;
-    margin: 0 auto;
-}
-.innter-test{
-    background: #adadad;
-    padding: 46px;
-    width: 0;
-}
-</style>
-
-<div class="outer-test"><div class="inner-test"></div></div>
-
+<p>根据上述代码，如果点击 <code>div.inner</code>，打印的结果是什么？</p>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>点击内部的正方形以触发点击事件</p>
+<p><style type="text/css"><br>.outer-test{<br>    background: #d4d4d4;<br>    padding: 25px;<br>    width: 92px;<br>    margin: 0 auto;<br>}<br>.innter-test{<br>    background: #adadad;<br>    padding: 46px;<br>    width: 0;<br>}<br></style></p>
+<p><div class="outer-test"><div class="inner-test"></div></div></p>
 <button class="btn clear-log-2">Clear log</button>
 
-<textarea class="log-output log-output-2" readonly></textarea>
-
+<p><textarea class="log-output log-output-2" readonly></textarea></p>
 <script>
 var targetLogOutput;
 
