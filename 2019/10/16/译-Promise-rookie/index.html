@@ -22,7 +22,7 @@
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="JS程序员们，是时候承认了：我们的 promise 有问题 等等，我不是说 promise 本身有问题，基于 A+ 规范 编写的 Promise 自然是无懈可击 我说的这个问题在过去的一年里反复出现，我见到了无数的程序员栽在了 PouchDB API 和其他深度基于 promise 的 API 上： 我们中的绝大多数对 promise 的使用只停留在一知半解的层面 不信？不妨看看我在推特上 po">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-10-16T07:13:59.047Z">
+<meta property="og:updated_time" content="2019-10-16T07:16:41.781Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="[译]Promise rookie">
 <meta name="twitter:description" content="JS程序员们，是时候承认了：我们的 promise 有问题 等等，我不是说 promise 本身有问题，基于 A+ 规范 编写的 Promise 自然是无懈可击 我说的这个问题在过去的一年里反复出现，我见到了无数的程序员栽在了 PouchDB API 和其他深度基于 promise 的 API 上： 我们中的绝大多数对 promise 的使用只停留在一知半解的层面 不信？不妨看看我在推特上 po">
@@ -162,8 +162,7 @@
 <p>不信？不妨看看我在推特上 po 出的 <a href="https://twitter.com/nolanlawson/status/578948854411878400" target="_blank" rel="noopener">题目</a>：</p>
 <h4 id="以下四个-promise-有什么区别"><a href="#以下四个-promise-有什么区别" class="headerlink" title="以下四个 promise 有什么区别"></a>以下四个 <code>promise</code> 有什么区别</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">doSomething().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> doSomethingElse();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">doSomething().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	doSomethingElse();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">doSomething().then(doSomethingElse());</span><br><span class="line"></span><br><span class="line">doSomething().then(doSomethingElse);</span><br></pre></td></tr></table></figure>
 <p>答案在本文的末尾</p>
-<p>###为什么要使用 promise</p>
-<p>如果你读过 promise 相关文章，你会发现有一个名词会被经常提到——<a href="https://medium.com/@wavded/managing-node-js-callback-hell-1fe03ba8baf" target="_blank" rel="noopener">the pyramid of doom 末日金字塔</a> ——一些可怕的回调代码，层层嵌套，稳定地向屏幕右侧延伸</p>
+<h3 id="为什么要使用-promise"><a href="#为什么要使用-promise" class="headerlink" title="为什么要使用 promise"></a>为什么要使用 promise</h3><p>如果你读过 promise 相关文章，你会发现有一个名词会被经常提到——<a href="https://medium.com/@wavded/managing-node-js-callback-hell-1fe03ba8baf" target="_blank" rel="noopener">the pyramid of doom 末日金字塔</a> ——一些可怕的回调代码，层层嵌套，稳定地向屏幕右侧延伸</p>
 <p>Promise 的出现确实解决了这个问题，但它的作用不仅限于减少代码缩进！正如 <a href="http://youtu.be/hf1T_AONQJU" target="_blank" rel="noopener">Redemption from Callback Hell</a> 中解释的，回调带来的真正问题是它剥夺了我们使用 <code>return</code> 和 <code>throw</code> 的权利，与此同时，我们的程序的整个流程都是基于副作用：一个函数顺带调用另一个函数</p>
 <p>实际上，回调“作的恶”不止于此：它让我们与栈隔绝（栈：在编程语言中通常用来保证程序顺利运行的东西）！脱离栈写代码就像是开着一辆没有刹车的车一样危险——你根本不知道自己的处境有多危险，知道危险来临，你需要它时才发现它不在!</p>
 <p>Promise 的重点在于，在我们写异步代码时，让我们重拾丢失的语言规范：<code>return</code>、<code>throw</code> 以及栈。</p>
