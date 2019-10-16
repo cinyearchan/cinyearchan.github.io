@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>[译]Promise rookie | Blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="前端,设计,Hexo主题,前端开发,用户体验,设计,frontend,design,nodejs,JavaScript" />
+  
+
+  <meta name="description" content="JS程序员们，是时候承认了：我们的 promise 有问题 等等，我不是说 promise 本身有问题，基于 A+ 规范 编写的 Promise 自然是无懈可击 我说的这个问题在过去的一年里反复出现，我见到了无数的程序员栽在了 PouchDB API 和其他深度基于 promise 的 API 上： 我们中的绝大多数对 promise 的使用只停留在一知半解的层面 不信？不妨看看我在推特上 po">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[译]Promise rookie">
+<meta property="og:url" content="https://cinyearchan.cn/2019/10/16/译-Promise-rookie/index.html">
+<meta property="og:site_name" content="Blog">
+<meta property="og:description" content="JS程序员们，是时候承认了：我们的 promise 有问题 等等，我不是说 promise 本身有问题，基于 A+ 规范 编写的 Promise 自然是无懈可击 我说的这个问题在过去的一年里反复出现，我见到了无数的程序员栽在了 PouchDB API 和其他深度基于 promise 的 API 上： 我们中的绝大多数对 promise 的使用只停留在一知半解的层面 不信？不妨看看我在推特上 po">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-10-16T07:13:59.047Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[译]Promise rookie">
+<meta name="twitter:description" content="JS程序员们，是时候承认了：我们的 promise 有问题 等等，我不是说 promise 本身有问题，基于 A+ 规范 编写的 Promise 自然是无懈可击 我说的这个问题在过去的一年里反复出现，我见到了无数的程序员栽在了 PouchDB API 和其他深度基于 promise 的 API 上： 我们中的绝大多数对 promise 的使用只停留在一知半解的层面 不信？不妨看看我在推特上 po">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">home</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">home</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            blog
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/atom.xml"
+            rel="noopener noreferrer"
+            target="_blank"
+            >
+            rss
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-译-Promise-rookie" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">[译]Promise rookie</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2019.10.16</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>cinyearchan</span>
+        </span>
+      
+
+      
+
+
+      
+
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>JS程序员们，是时候承认了：我们的 promise 有问题</p>
+<p>等等，我不是说 promise 本身有问题，基于 <a href="https://promisesaplus.com/" target="_blank" rel="noopener">A+ 规范</a> 编写的 Promise 自然是无懈可击</p>
+<p>我说的这个问题在过去的一年里反复出现，我见到了无数的程序员栽在了 PouchDB API 和其他深度基于 promise 的 API 上：</p>
+<p>我们中的绝大多数对 promise 的使用只停留在一知半解的层面</p>
+<p>不信？不妨看看我在推特上 po 出的 <a href="https://twitter.com/nolanlawson/status/578948854411878400" target="_blank" rel="noopener">题目</a>：</p>
+<h4 id="以下四个-promise-有什么区别"><a href="#以下四个-promise-有什么区别" class="headerlink" title="以下四个 promise 有什么区别"></a>以下四个 <code>promise</code> 有什么区别</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">doSomething().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> doSomethingElse();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">doSomething().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	doSomethingElse();</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">doSomething().then(doSomethingElse());</span><br><span class="line"></span><br><span class="line">doSomething().then(doSomethingElse);</span><br></pre></td></tr></table></figure>
+<p>答案在本文的末尾</p>
+<p>###为什么要使用 promise</p>
+<p>如果你读过 promise 相关文章，你会发现有一个名词会被经常提到——<a href="https://medium.com/@wavded/managing-node-js-callback-hell-1fe03ba8baf" target="_blank" rel="noopener">the pyramid of doom 末日金字塔</a> ——一些可怕的回调代码，层层嵌套，稳定地向屏幕右侧延伸</p>
+<p>Promise 的出现确实解决了这个问题，但它的作用不仅限于减少代码缩进！正如 <a href="http://youtu.be/hf1T_AONQJU" target="_blank" rel="noopener">Redemption from Callback Hell</a> 中解释的，回调带来的真正问题是它剥夺了我们使用 <code>return</code> 和 <code>throw</code> 的权利，与此同时，我们的程序的整个流程都是基于副作用：一个函数顺带调用另一个函数</p>
+<p>实际上，回调“作的恶”不止于此：它让我们与栈隔绝（栈：在编程语言中通常用来保证程序顺利运行的东西）！脱离栈写代码就像是开着一辆没有刹车的车一样危险——你根本不知道自己的处境有多危险，知道危险来临，你需要它时才发现它不在!</p>
+<p>Promise 的重点在于，在我们写异步代码时，让我们重拾丢失的语言规范：<code>return</code>、<code>throw</code> 以及栈。</p>
+<p>但你必须知道如何正确使用 promise 才能充分享受它带来的好处，否则只会是驱虎吞狼、后患无穷</p>
+<h3 id="初阶错误"><a href="#初阶错误" class="headerlink" title="初阶错误"></a>初阶错误</h3><h4 id="新手错误：promise的末日金字塔"><a href="#新手错误：promise的末日金字塔" class="headerlink" title="新手错误：promise的末日金字塔"></a>新手错误：promise的末日金字塔</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">remotedb.allDocs(&#123;</span><br><span class="line">	include_docs: <span class="literal">true</span>,</span><br><span class="line">	attachments: <span class="literal">true</span></span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">result</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">var</span> docs = result.rows;</span><br><span class="line">	docs.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">element</span>) </span>&#123;</span><br><span class="line">		localdb.put(element.doc).then(<span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">			alert(<span class="string">"Pulled doc with id "</span> + element.doc._id + <span class="string">" and added to local db."</span>);</span><br><span class="line">		&#125;).catch(<span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">			<span class="keyword">if</span> (err.name == <span class="string">'conflict'</span>) &#123;</span><br><span class="line">				localdb.get(element.doc._id).then(<span class="function"><span class="keyword">function</span>(<span class="params">resp</span>) </span>&#123;</span><br><span class="line">					localdb.remove(resp._id, resp._rev).then(<span class="function"><span class="keyword">function</span>(<span class="params">resp</span>) </span>&#123;</span><br><span class="line">						<span class="comment">// ... 诸如此类</span></span><br><span class="line">					&#125;)</span><br><span class="line">				&#125;)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>改进版：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">remotedb.allDocs(...).then(<span class="function"><span class="keyword">function</span>(<span class="params">resultOfAllDocs</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> localdb.put(...);</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">resultOfPut</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> localdb.get(...);</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">resultOfGet</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> localdb.put(...);</span><br><span class="line">&#125;).catch(<span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">	<span class="built_in">console</span>.log(err);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>这被称为 <code>composing promises</code> 即“合成promises”，这是 <code>promises</code> 所提供的强大魔力之一。每一个方法只会在前一个 <code>promise</code> 转变为 <code>resolved</code> 状态时被调用，并且可以获取前一个 <code>promise</code> 的结果</p>
+<h4 id="新手错误2：forEach-循环-与-promise-如何兼得"><a href="#新手错误2：forEach-循环-与-promise-如何兼得" class="headerlink" title="新手错误2：forEach()/循环 与 promise 如何兼得"></a>新手错误2：<code>forEach()/循环</code> 与 <code>promise</code> 如何兼得</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 我想通过 remove() 处理所有文档</span></span><br><span class="line">db.allDocs(&#123;<span class="attr">include_docs</span>: <span class="literal">true</span>&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">result</span>) </span>&#123;</span><br><span class="line">	result.rows.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">rows</span>) </span>&#123;</span><br><span class="line">		db.remove(row.doc);</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="comment">// 我认为所有文档都被移除了 ha?</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>上述代码有什么问题？问题在于，第一个 function 会返回 undefined，意味着第二个 function 不会等待所有文档都执行 db.remove()。实际上，它根本什么都不会等，任意数目的文档被移除时，第二个方法都会执行。</p>
+<p>解决的方法是，应该用 <code>Promise.all()</code> 来替代 <code>forEach()</code>/<code>for</code>/<code>while</code> 处理异步循环<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">db.allDocs(&#123;<span class="attr">include_docs</span>: <span class="literal">true</span>&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">resp</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="built_in">Promise</span>.all(result.rows.map(<span class="function"><span class="keyword">function</span>(<span class="params">row</span>) </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> db.remove(row.doc);</span><br><span class="line">	&#125;));</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">arrayOfResults</span>) </span>&#123;</span><br><span class="line">	<span class="comment">// 此时，所有文档才真正被移除</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>这到底发生了什么？简单来说，<code>Promise.all()</code> 以一个包含多个 promise 的数组作为输入，返回另一个 promise 作为输出，只有当输入数组中的所有 promise 的状态都转变为 <code>resolved</code>，该输出的 promise 状态才会变成 <code>resolved</code>，相当于异步的for循环</p>
+<p><code>Promise.all()</code> 也会向随后的处理函数传递一个包含所有结果的数组，这是非常有用的，例如，试图通过 <code>get()</code> 从 PouchDB 中获取多个数据。如果输入数组中包含的 promise，有任意一个状态转变为 <code>rejected</code>，该 <code>all()</code>的 promise 都会变为 <code>rejected</code></p>
+<h4 id="新手错误3：忘记加上-catch"><a href="#新手错误3：忘记加上-catch" class="headerlink" title="新手错误3：忘记加上 .catch()"></a>新手错误3：忘记加上 <code>.catch()</code></h4><p>这是另一个常见的错误。简单的认为他们写的promise绝不会抛出错误，很多开发者都会忘记在 promise 链的末尾加上 <code>.catch()</code>。一旦如此，promise 中任何被抛出的错误都会被掩盖，甚至无法再 console 中展现，无疑会提高 debug 的难度</p>
+<p>为避免上述情况的发生，我建议在每一个promise链的末尾都加上 <code>.catch()</code>：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">somePromise().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> anotherPromise();</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> yetAnotherPromise();</span><br><span class="line">&#125;).catch(<span class="built_in">console</span>.log.bind(<span class="built_in">console</span>)); <span class="comment">// &lt;-- this is badass</span></span><br></pre></td></tr></table></figure>
+<h4 id="新手错误4：使用-deferred"><a href="#新手错误4：使用-deferred" class="headerlink" title="新手错误4：使用 deferred"></a>新手错误4：使用 <code>deferred</code></h4><p>我总是能看到这类<a href="http://gonehybrid.com/how-to-use-pouchdb-sqlite-for-local-storage-in-your-ionic-app/" target="_blank" rel="noopener">错误</a>，以至于我现在都不愿意重复这个单词</p>
+<p>简而言之，promise有一段漫长且曲折的历史，JS社区花费了大量的时间来纠正期间的错误。在promise发展的早期，jQuery 和 Angular 都通过 “deferred” 来实现各自的 promise，而现如今都被 ES6 的 promise 所取代，例如Q、when、RSVP、Bluebird、Lie等库都实现了符合 promise/A+ 规范的 promise</p>
+<p>如何避免使用 deferred 呢？</p>
+<p>首先，绝大多数 promise 库都会为你引入第三方库实现的 promise 的方法。例如，Angular 中的 <code>$q</code> 模块允许你通过 <code>$q.when()</code> 来包裹不符合 <code>$q</code> 规范的 promise。所以，Angular 使用者可以这样包裹 PouchDB promises：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$q.when(db.put(doc)).then(<span class="comment">/* ... */</span>); <span class="comment">// &lt;-- 这就是你迫切需要的</span></span><br></pre></td></tr></table></figure>
+<p>另一个方法是使用<a href="https://blog.domenic.me/the-revealing-constructor-pattern/" target="_blank" rel="noopener">revealing constructor pattern</a>来包裹非 promise 的API。例如，封装基于回调的API，比如说 Nodejs 中的 <code>fs.readFile()</code>，可以这样做：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span>(<span class="params">resolve, reject</span>) </span>&#123;</span><br><span class="line">  fs.readFile(<span class="string">'myfile.txt'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, file</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      <span class="keyword">return</span> reject(err);</span><br><span class="line">    &#125;</span><br><span class="line">    resolve(file);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;).then(<span class="comment">/* ... */</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="新手错误5：使用副作用而不是返回"><a href="#新手错误5：使用副作用而不是返回" class="headerlink" title="新手错误5：使用副作用而不是返回"></a>新手错误5：使用副作用而不是返回</h4><p>以下代码有什么问题？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">somePromise().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  someOtherPromise();</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 我希望 someOtherPromise() 已经是 resolved 状态了</span></span><br><span class="line">  <span class="comment">// 事实却告诉我，它不是</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>是时候来详细了解 promise 的各个要点了</p>
+<p>正如我之前所说，promise 的魔力在于它回馈我们之前的 <code>return</code> 和 <code>throw</code>。实际中是如何体现的呢？</p>
+<p>每一个 promise 都会为你提供一个 <code>then()</code> 方法（或者 <code>catch()</code>方法，<code>then(null, ...)</code> 的语法糖）。让我们进入 <code>then()</code> 函数的内部：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">somePromise().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 现在是 then() 函数的内部</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>我们在 <code>then()</code> 函数内部可以做什么？有三件事是可以做的：</p>
+<ol>
+<li><p><code>return</code> 另一个 promise</p>
+</li>
+<li><p><code>return</code> 一个同步的值（或 <code>undefined</code>）</p>
+</li>
+<li><p><code>throw</code> 一个同步的 error</p>
+</li>
+</ol>
+<p>一旦你掌握其中的诀窍，你就解开了 promise 的魔术。让我们逐点分析：</p>
+<ol>
+<li><p>返回另一个 promise</p>
+<p>这个模式在 promise 相关文章中很常见，就像上面提到的“合成promise”：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">getUserByName(<span class="string">'nolan'</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">user</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> getUserAccountById(user.id);</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">userAccount</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// I got a user account!</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>注意此处，我返回了第二个 promise ——返回 <code>return</code> 是关键，如果没有 <code>return</code> ，<code>getUserAccountById()</code> 就只会产生副作用，第二个 then 的处理函数就只能接收到 <code>undefined</code> 而不是 <code>userAccount</code></p>
+</li>
+<li><p>返回一个同步的值（或 undefined）</p>
+<p>返回 <code>undefined</code> 通常来说是一个错误，但返回一个同步的值，却是一种将同步代码转换为 promise 风格代码的很酷的方式。例如，我们有一份用户的缓存数据，我们可以做什么呢：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">getUserByName(<span class="string">'nolan'</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">user</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (inMemoryCache[user.id]) &#123;</span><br><span class="line">    <span class="keyword">return</span> inMemoryCache[user.id]; <span class="comment">// returning a synchronous value!</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> getUserAccountById(user.id); <span class="comment">// returning a promise!</span></span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">userAccount</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// I got a user account!</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>这不是很酷么？第二个函数根本不用关心 <code>userAccount</code> 是同步获取的还是异步获取的，第一个函数也可以随意返回同步的值或者异步的值。</p>
+<p>不幸的是，有个麻烦的事实摆在眼前：无返回值的函数，严格来说，都会默认返回 <code>undefined</code> ，意味着当你打算返回某些东西的时候，很容易在不经意间就产生副作用</p>
+<p>出于这个原因，我的个人习惯是，总是在 <code>.then()</code> 函数内加上 <code>return</code> 或者 <code>throw</code> sth，我建议你也这样做</p>
+</li>
+<li><p>抛出同步的异常</p>
+<p>说到 <code>throw</code> ，这是 promise 可以变得更加令人敬畏之处。比如说我们希望能够抛出一个同步的异常以防用户登出：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">getUserByName(<span class="string">'nolan'</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">user</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (user.isLoggedOut()) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'user logged out!'</span>); <span class="comment">// throwing a synchronous error!</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (inMemoryCache[user.id]) &#123;</span><br><span class="line">    <span class="keyword">return</span> inMemoryCache[user.id]; <span class="comment">// returning a synchronous value!</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> getUserAccountById(user.id); <span class="comment">// returning a promise!</span></span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">userAccount</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// I got a user account!</span></span><br><span class="line">&#125;).catch(<span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// Boom, I got an error!</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>上述代码中，如果用户登出，<code>catch()</code> 会捕获到一个同步的异常，并且如果任意一个 promise 变为 rejected 状态， <code>catch()</code> 会捕获到一个异步的异常。同样，<code>catch()</code> 函数无需关系捕获的异常是同步的还是异步的。</p>
+<p>这在开发过程中确定代码异常极其有效！举个例子，在 <code>then()</code> 函数内部任意一处，我们执行 <code>JSON.parse()</code> 操作，如果是 JSON 是无效的，则会抛出一个同步的异常。在回调中，该异常会被掩盖；但在 promise 中，我们可以在 <code>catch()</code> 中轻松处理捕获到的异常。</p>
+</li>
+</ol>
+<h3 id="进阶错误"><a href="#进阶错误" class="headerlink" title="进阶错误"></a>进阶错误</h3><p>既然你已经学到了可以让 promise 变得简单的单一技巧，不妨来看看一些边角案例，当然，编程总是会遇到边角案例</p>
+<p>之所以说这些案例是进阶的，是因为我发现那些已经相当擅长 promise 的程序员才犯这些错。如果想弄清楚文章开头提到的那个问题，我们就有必要研究清楚这些案例</p>
+<h4 id="进阶错误1：不知道-Promise-resolve"><a href="#进阶错误1：不知道-Promise-resolve" class="headerlink" title="进阶错误1：不知道 Promise.resolve()"></a>进阶错误1：不知道 <code>Promise.resolve()</code></h4><p>正如我在上面提到的，promise 非常擅长将同步代码封装为异步代码。然而，如果下面这段代码你敲得多了的话：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span>(<span class="params">resolve, reject</span>) </span>&#123;</span><br><span class="line">  resolve(someSynchronousValue);</span><br><span class="line">&#125;).then(<span class="comment">/* ... */</span>);</span><br></pre></td></tr></table></figure>
+<p>你可以用 <code>Promise.resolve()</code> 来更简洁的表明这一点：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.resolve(someSynchronousValue).then(<span class="comment">/* ... */</span>);</span><br></pre></td></tr></table></figure>
+<p>这在捕获任何同步的异常上也极其有效，正因如此，我已经养成了几乎所有 promise 返回API方法的习惯，如下所示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">somePromiseAPI</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    doSomethingThatMayThrow();</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'foo'</span>;</span><br><span class="line">  &#125;).then(<span class="comment">/* ... */</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>记住一点：任何可能同步抛出的代码，都可以在某处找到几乎不可能调试的隐藏的异常。如果你用 <code>Promise.solve()</code> 包裹一切同步代码，则你总是可以在之后通过 <code>catch()</code> 函数捕获异常</p>
+<p>相似的，你可以用 <code>Promise.reject()</code> 来返回一个状态立刻变为 <code>rejected</code> 的 promise 实例：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.reject(<span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'some awful error'</span>));</span><br></pre></td></tr></table></figure>
+<h4 id="进阶错误2：then-resolveHandler-catch-rejectHandler-并不全等于-then-resolveHandler-rejectHandler"><a href="#进阶错误2：then-resolveHandler-catch-rejectHandler-并不全等于-then-resolveHandler-rejectHandler" class="headerlink" title="进阶错误2：then(resolveHandler).catch(rejectHandler) 并不全等于 then(resolveHandler, rejectHandler)"></a>进阶错误2：<code>then(resolveHandler).catch(rejectHandler)</code> 并不全等于 <code>then(resolveHandler, rejectHandler)</code></h4><p>上面提到的 <code>catch()</code> 是语法糖，因此如下两个代码片段是等价的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">somePromise().catch(<span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// handle error</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">somePromise().then(<span class="literal">null</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// handle error</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>然而，下面两段代码却不是等价的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">somePromise().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> someOtherPromise();</span><br><span class="line">&#125;).catch(<span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// handle error</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">somePromise().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> someOtherPromise();</span><br><span class="line">&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// handle error</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>如果你还在疑惑为何不等价，不妨设想当第一个函数抛出异常时：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">somePromise().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'oh noes'</span>);</span><br><span class="line">&#125;).catch(<span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// I caught your error! :)</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">somePromise().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'oh noes'</span>);</span><br><span class="line">&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// I didn't catch your error! :(</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>事实证明，当你使用 <code>then(resolveHandler, rejectHandler)</code> 格式时，如果 <code>resolveHandler</code> 自身抛出了异常，<code>rejectHandler</code> 是自然无法捕获到的</p>
+<p>为此，我自己的习惯是：从不使用 <code>then()</code> 函数的第二个参数，而是使用 <code>catch()</code>。例外则是，当我在写异步的<a href="http://mochajs.org/" target="_blank" rel="noopener">Mocha</a> 测试用例时，我会使用第二个参数来确保异常能够被抛出：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">it(<span class="string">'should throw an error'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> doSomethingThatThrows().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'I expected an error!'</span>);</span><br><span class="line">  &#125;, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">    should.exist(err);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>说到测试，在测试 promise API时，<a href="http://mochajs.org/" target="_blank" rel="noopener">Mocha</a> 和 <a href="http://chaijs.com/" target="_blank" rel="noopener">Chai</a> 是绝妙的组合。<a href="https://github.com/pouchdb/plugin-seed" target="_blank" rel="noopener">pouchdb-plugin-seed</a>项目中有一些简单的 <a href="https://github.com/pouchdb/plugin-seed/blob/master/test/test.js" target="_blank" rel="noopener">测试用例</a> 可以拿来练手</p>
+<h4 id="进阶错误3：promises-VS-promise-factories"><a href="#进阶错误3：promises-VS-promise-factories" class="headerlink" title="进阶错误3：promises VS promise factories"></a>进阶错误3：promises VS promise factories</h4><p>或许你想按顺序一个一个的处理一组 promise，处理的方式近似于 <code>Promise.all()</code> ，但其中的 promise 却不是并发执行的</p>
+<p>你可能简单的认为理想的代码是这样的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">executeSequentially</span>(<span class="params">promises</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> result = <span class="built_in">Promise</span>.resolve();</span><br><span class="line">  promise.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">promise</span>) </span>&#123;</span><br><span class="line">    result = result.then(promise);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实际上，上述代码无法达到你预期的效果，传递给 <code>executeSequentially()</code> 的多个 promise 仍然会并发执行</p>
+<p>发生这种情况的原因是你根本不想操作 promise 的数组，根据 promise 规范，一旦创建了 promise，它就会开始执行，你真正想要的是 promise factories 的数组</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">executeSequentially</span>(<span class="params">promiseFactories</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> result = <span class="built_in">Promise</span>.resolve();</span><br><span class="line">  promiseFactories.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">promiseFactory</span>) </span>&#123;</span><br><span class="line">    result = result.then(promiseFactory);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我知道你在想什么：“这个 Java 程序员到底是谁，为什么他在谈论 factories 呢？”promise factories 很简单，只是一个会返回一个 promise 实例的函数而已:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myPromiseFactory</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> somethingThatCreatesAPromise();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这管用么？管用！promise factory 只有被调用时才会生成 promise，它运行的方式类似于 <code>then</code> 函数——实际上，它们就是一回事</p>
+<p>观察上述的 <code>executeSequentially()</code> 函数，然后想象 <code>myPromiseFactory</code> 被替换进 <code>result.then(...)</code> 内部，之后豁然开朗，这时你才刚接触到 promise 的启蒙</p>
+<h4 id="进阶错误4：如果我想要两个-promise-实例的结果呢"><a href="#进阶错误4：如果我想要两个-promise-实例的结果呢" class="headerlink" title="进阶错误4：如果我想要两个 promise 实例的结果呢"></a>进阶错误4：如果我想要两个 promise 实例的结果呢</h4><p>通常，一个 promise 实例将取决于另一个 promise 实例，但如果想要获取这两个 promise 实例的输出呢？比如说：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">getUserByName(<span class="string">'nolan'</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">user</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> getUserAccountById(user.id);</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">userAccount</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 槽糕，我也需要获取 user 对象啊！</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>既要当个优秀的JS程序员，又要避免“爆炸金字塔”的出现，我们或许应该将 <code>user</code> 对象存储在更高一级作用域的变量中：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> user;</span><br><span class="line">getUserByName(<span class="string">'nolan'</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">result</span>) </span>&#123;</span><br><span class="line">  user = result;</span><br><span class="line">  <span class="keyword">return</span> getUserAccountById(user.id);</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">userAccount</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 好了，user 和 userAccount 都可以获取到了</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>这办法能用，但只是凑合。我的建议是：放开先前的偏见，拥抱金字塔：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">getUserByName(<span class="string">'nolan'</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">user</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> getUserAccountById(user.id).then(<span class="function"><span class="keyword">function</span>(<span class="params">userAccount</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 你看，我也可以获取 user 和 userAccount </span></span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>至少，暂时的“拥抱金字塔”:)</p>
+<p>如果代码缩进变成了一个问题，那你可以做JS程序员“自古以来”一直在做的事——将函数提取到一个命名函数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">onGetUserAndUserAccount</span>(<span class="params">user, userAccount</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> doSomething(user, userAccount);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">onGetUser</span>(<span class="params">user</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> getUserAccountById(user.id).then(<span class="function"><span class="keyword">function</span>(<span class="params">userAccount</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> onGetUserAndUserAccount(user, userAccount);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">getUserByName(<span class="string">'onlan'</span>)</span><br><span class="line">	.then(onGetUser)</span><br><span class="line">	.then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 运行到这里时，doSomething() 已经执行完毕，我们的缩进归零了</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>当你的 promise 代码越来越复杂时，你会发现你会将越来越多的函数提取到命名函数中，代码也会变得更加美观：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">putYourRightFootIn()</span><br><span class="line">	.then(putYourRightFootOut)</span><br><span class="line">	.then(putYourRightFootIn)</span><br><span class="line">	.then(shakeItAllAbout);</span><br></pre></td></tr></table></figure>
+<p>这就是 promise 出现的意义！</p>
+<h4 id="进阶错误5：promise-fall-through-通过"><a href="#进阶错误5：promise-fall-through-通过" class="headerlink" title="进阶错误5：promise fall through 通过"></a>进阶错误5：promise fall through 通过</h4><p>这是我在上面介绍 promise 时提到的错误，极其深奥的案例，或许永远都不会出现在你的代码里，但它着实让我吓了一跳</p>
+<p>看到如下代码你有什么想法么：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.resolve(<span class="string">'foo'</span>).then(<span class="built_in">Promise</span>.resolve(<span class="string">'bar'</span>)).then(<span class="function"><span class="keyword">function</span>(<span class="params">result</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(result);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>你可能觉得会打印 <code>bar</code>，但结果却是 <code>foo</code></p>
+<p>原因在于，当你向 <code>then()</code> 传递一个非函数（例如 promise 实例）时，它实际上会将其看作 <code>then(null)</code> ，这会导致前一个 promise 的结果通过。你不妨试试：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.resolve(<span class="string">'foo'</span>).then(<span class="literal">null</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params">result</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(result);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>就算中间加上无数的 <code>then(null)</code>，打印的结果仍然是 <code>foo</code></p>
+<p>这实际上回到了之前关于 promise VS promise factories 的讨论。简单地说，你可以直接向 <code>then()</code> 方法中传入一个 promise 实例，但它却不会依照你希望的那样运行。<code>then()</code> 期望获取一个函数，所以大部分情况你的意思应该是：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.resolve(<span class="string">'foo'</span>).then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Promise</span>.resolve(<span class="string">'bar'</span>);</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span>(<span class="params">result</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(result); <span class="comment">// 结果是 bar，正如我们期望的</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>所以记住一点：给 <code>then()</code> 传入的只能是函数（不要传别的什么）！</p>
+<h3 id="答疑"><a href="#答疑" class="headerlink" title="答疑"></a>答疑</h3><h5 id="题目一"><a href="#题目一" class="headerlink" title="题目一"></a>题目一</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">doSomething().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> doSomethingElse();</span><br><span class="line">&#125;).then(finalHandler);</span><br></pre></td></tr></table></figure>
+<p>答案：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">doSomething</span><br><span class="line">|-----------------|</span><br><span class="line">                  doSomethingElse(<span class="literal">undefined</span>)</span><br><span class="line">                  |------------------|</span><br><span class="line">                                     finalHandler(resultOfDoSomethingElse)</span><br><span class="line">                                     |------------------|</span><br></pre></td></tr></table></figure>
+<h5 id="题目二"><a href="#题目二" class="headerlink" title="题目二"></a>题目二</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">doSomething().then(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  doSomethingElse();</span><br><span class="line">&#125;).then(finalHandler);</span><br></pre></td></tr></table></figure>
+<p>答案：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">doSomething</span><br><span class="line">|------------------|</span><br><span class="line">                   doSomethingElse(<span class="literal">undefined</span>)</span><br><span class="line">                   |------------------|</span><br><span class="line">                   finalHandler(<span class="literal">undefined</span>)</span><br><span class="line">                   |------------------|</span><br></pre></td></tr></table></figure>
+<h5 id="题目三"><a href="#题目三" class="headerlink" title="题目三"></a>题目三</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">doSomething().then(doSomethingElse())</span><br><span class="line">	.then(finalHandler);</span><br></pre></td></tr></table></figure>
+<p>答案：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">doSomething</span><br><span class="line">|------------------|</span><br><span class="line">doSomethingElse(<span class="literal">undefined</span>)</span><br><span class="line">|---------------------------------|</span><br><span class="line">                   finalHandler(resultOfDoSomething)</span><br><span class="line">                   |------------------|</span><br></pre></td></tr></table></figure>
+<h5 id="题目四"><a href="#题目四" class="headerlink" title="题目四"></a>题目四</h5><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">doSomething().then(doSomethingElse)</span><br><span class="line">	.then(finalHandler);</span><br></pre></td></tr></table></figure>
+<p>答案：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">doSomething</span><br><span class="line">|-----------------|</span><br><span class="line">                  doSomethingElse(resultOfDoSomething)</span><br><span class="line">                  |-----------------|</span><br><span class="line">                                    finalHandler(resultOfDoSomethingElse)</span><br><span class="line">                                    |-----------------|</span><br></pre></td></tr></table></figure>
+<p>如果还是不太明白这些答案，我建议你重新再把这篇文章看一遍，或者自己定义 <code>doSomething()</code> 和 <code>doSomethingElse()</code> 这两个方法，放到浏览器里试试</p>
+<blockquote>
+<p>说明：这些给出的例子，我假定 <code>doSomething()</code> 和 <code>doSomethingElse()</code> 都返回 promise，并且这些 promise 表示在 JavaScript 事件循环之外完成的事（例如 IndexedDB、network、setTimeout），这就是为什么在合适的情况下，它们显示成并发，<a href="http://jsbin.com/tuqukakawo/1/edit?js,console,output" target="_blank" rel="noopener">演示</a></p>
+</blockquote>
+<p>promise 的更多进阶用法—— <a href="https://gist.github.com/nolanlawson/6ce81186421d2fa109a4" target="_blank" rel="noopener">promise protips chear sheet</a></p>
+<h4 id="关于-promise-的最后几句话"><a href="#关于-promise-的最后几句话" class="headerlink" title="关于 promise 的最后几句话"></a>关于 promise 的最后几句话</h4><p>Promise 是伟大的，如果你仍然在使用回调（嵌套），我强烈建议你讲代码转换为 promise 风格，你的代码将变得更加紧凑、优雅、更具可读性</p>
+<p>不信？你看这个例子：<a href="https://t.co/hRyc6ENYGC" target="_blank" rel="noopener">a refactor of PouchDB’s map/reduce module</a> 其中用 promise 取代回调，结果是：290个插入操作，555个删除操作</p>
+<p>顺带提一句，那个写出恶心的回调嵌套代码的人，其实是我自己，所以这也算是我在 promise 原初魔力的第一课，同时感谢其他 PouchDB 的贡献者一路对我的指导</p>
+<p>话虽如此，promise 并非完美，但就像是瘦死的骆驼比马大，promise 仍旧要好过回调，因此就目前而言，其中一个要比另一个更接近“完美”，但是如果你有机会选择更好的，那就要尽力避免它们俩</p>
+<p>虽然优于回调，promise 仍然难以理解且极易出错，正因如此我才写下这篇文章讲明其中事实。新手和专家都会经常混淆这些概念，真的，这不是他们的错，问题在于 promise ——虽然近似于我们在同步代码中使用的模式，看起来是个不错的替代品，但却不是百分之百相同</p>
+<p>实际上，你不应该学习一堆神秘的规则和新的 API 来做这些事，在同步的世界里，你可以完全使用你熟悉的模式，如 <code>return</code>、<code>catch</code>、<code>throw</code>和 <code>for</code> 循环。你的脑子里不应该始终有两套系统并行！</p>
+<h4 id="Awaiting-async-await"><a href="#Awaiting-async-await" class="headerlink" title="Awaiting async/await"></a>Awaiting async/await</h4><p>这是我另一篇文章 <a href="http://pouchdb.com/2015/03/05/taming-the-async-beast-with-es7.html" target="_blank" rel="noopener">Taming the asynchronous beast with ES7</a> 中讨论的要点，其中我研究了 ES7 的关键字 <code>async</code>/<code>await</code>，以及它们如何将 promise 深层次的融合到 JS 这门语言中。相比于写伪同步代码（其中提供的 <code>catch()</code> 方法看似与 <code>catch</code> 一致，实则不然），ES7 允许我们使用真正的 <code>try</code>/<code>catch</code>/<code>return</code> 关键字，正如我们在 CS 101 里学到的那样</p>
+<p>就 JS 这门语言来说，这是一个巨大的福音。因为最终，只要工具不在我们犯错时及时提示，这些 promise 反模式就总是会不经意出现</p>
+<p>以 JS 的历史为例，我认为 <a href="http://jslint.com/" target="_blank" rel="noopener">JSLint</a> 和 <a href="http://jshint.com/" target="_blank" rel="noopener">JSHint</a> 对 JS 社区做出的贡献要比 <a href="http://amzn.com/0596517742" target="_blank" rel="noopener">JS 语言精粹</a> 要多，即使它们有效的包含相同的信息。这就像是“明确指出你的代码中何处出错了”和“通过阅读一本书来试图搞清楚别人的代码是怎么出错的”的区别</p>
+<p>ES7 的 <code>async</code>/<code>await</code> 的美在于，在大多数情况下，代码中的错误会将自己显示为语法、编译器错误，而不是运行时的微妙的错误。不过，在那之前，熟悉并掌握 promise，以及如何在 ES5 和 ES6 中正确使用是一件好事</p>
+<p>但我却意识到一点，就像是《JS 语言精粹》这本书一样，这篇文章所能提供的影响是有限的。但当你看到他们犯同样的错误时，你完全有能力指出其中的错误，因为我们中有太多的人需要承认一点：我还并没有百分之百掌握 promise ！</p>
+<blockquote>
+<p>更新：需要指出的一点是：Bluebird 3.0 将会提供告警信息以避免我在本文中提到的许多错误。所以，在 ES7 完全推出之前，Bluebird 会是另一个非常不错的选择</p>
+</blockquote>
+<p><a href="https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html" target="_blank" rel="noopener">原文地址</a></p>
+
+    
+  </div>
+
+  
+      <div class="git"></div>
+  
+
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              blog
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/atom.xml"
+              rel="noopener noreferrer"
+              target="_blank"
+              >
+              rss
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+    
+
+    
+    
+
+    
+
+    
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>
